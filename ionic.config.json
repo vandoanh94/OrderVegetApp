@@ -1,0 +1,8 @@
+{
+  "name": "OrderVegetApp",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "ionic-angular",
+  "pro_id": "c11561ed"
+}
