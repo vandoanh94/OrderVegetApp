@@ -1,44 +1,82 @@
 import { Component, ViewChild } from '@angular/core';
-import { Nav, Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
-import { SplashScreen } from '@ionic-native/splash-screen';
 
-import { HomePage } from '../pages/home/home';
-import { ListPage } from '../pages/list/list';
+import { App, MenuController, Nav, Platform } from 'ionic-angular';
+import { ComponentsListPage } from '../pages/components/list/components.list.page';
+import { GoogleMapsPage } from '../pages/google-maps/google-maps.page';
+import { HomePage } from '../pages/home/home.page';
+import { SlideBoxPage } from '../pages/slide-box/slide-box.page';
+import { WordpressListPage } from '../pages/wordpress/list/wordpress.list.page';
+
+import { LoginPage } from '../pages/login/login';
+import { AuthService } from '../services/auth.service';
 
 @Component({
-  templateUrl: 'app.html'
+	templateUrl: 'app.html'
 })
 export class MyApp {
-  @ViewChild(Nav) nav: Nav;
+	pages;
+	rootPage;
 
-  rootPage: any = HomePage;
+	private app;
+	private platform;
+	private menu: MenuController;
 
-  pages: Array<{title: string, component: any}>;
+	@ViewChild(Nav) nav: Nav;
 
-  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen) {
-    this.initializeApp();
+	constructor(app: App, platform: Platform,
+		menu: MenuController,
+		private statusBar: StatusBar,
+		private auth: AuthService) {
+		this.menu = menu;
+		this.app = app;
+		this.platform = platform;
+		this.initializeApp();
 
-    // used for an example of ngFor and navigation
-    this.pages = [
-      { title: 'Home', component: HomePage },
-      { title: 'List', component: ListPage }
-    ];
+		// set our app's pages
+		this.pages = [
+			{ title: 'Home', component: HomePage, icon: 'home' },
+			{ title: 'Wordpress', component: WordpressListPage, icon: 'logo-wordpress' },
+			{ title: 'Slides', component: SlideBoxPage, icon: 'swap' },
+			{ title: 'Google maps', component: GoogleMapsPage, icon: 'map' },
+			{ title: 'Components', component: ComponentsListPage, icon: 'grid' },
+		];
+	}
 
-  }
+	initializeApp() {
+			this.platform.ready().then(() => {
+				this.statusBar.styleDefault();
+			});
 
-  initializeApp() {
-    this.platform.ready().then(() => {
-      // Okay, so the platform is ready and our plugins are available.
-      // Here you can do any higher level native things you might need.
-      this.statusBar.styleDefault();
-      this.splashScreen.hide();
-    });
-  }
+			this.auth.afAuth.authState
+				.subscribe(
+					user => {
+						if (user) {
+							this.rootPage = HomePage;
+						} else {
+							this.rootPage = LoginPage;
+						}
+					},
+					() => {
+						this.rootPage = LoginPage;
+					}
+				);
+	}
 
-  openPage(page) {
-    // Reset the content nav to have just this page
-    // we wouldn't want the back button to show in this scenario
-    this.nav.setRoot(page.component);
-  }
+	login() {
+		this.menu.close();
+		this.auth.signOut();
+		this.nav.setRoot(LoginPage);
+	}
+
+	logout() {
+		this.menu.close();
+		this.auth.signOut();
+		this.nav.setRoot(HomePage);
+	}
+
+	openPage(page) {
+	this.menu.close();
+	this.nav.setRoot(page.component);
+	}
 }
